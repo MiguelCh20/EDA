@@ -2,7 +2,7 @@
 class EDA:
 
     def main():
-        print("hola mundo")
+        print("SAFAS")
 
     def lee_fichero(nomfich):
     res = []
