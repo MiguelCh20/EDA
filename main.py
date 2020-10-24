@@ -1,16 +1,31 @@
 from timeit import default_timer as timer
+
+
 class EDA:
 
     def main(self):
+        archivo = False
+        while archivo != True:
+            try:
+                cargar = input(
+                    "Introduzca el nombre del fichero que desea cargar con la extension .txt: ")
+                vector = []
+                vector = self.lee_fichero(cargar)
+                archivo = True
+            except FileNotFoundError:
+                print("Introduzca un archivo que exista")
 
-        cargar=input( "Introduzca el nombre del fichero que desea cargar con la extension .txt: ")
-        vector=[]
-        vector=self.lee_fichero(cargar)
+        print("*** OPCIONES GENERALES ***")
+        usuarios = int(input("Número de nombres a mostrar: "))
+        nombre = input("Nombre del usuario: ")
 
-        archivo = True
+        print("\n*** BUCLE DE CONSULTAS ***")
+        fecha1 = input("Introduzca la fecha de inicio de búsqueda: ")
+        inicio = self.traduce_fecha(fecha1)
+        fecha2 = input("Introduzca la fecha de fin de búsqueda: ")
+        fin = self.traduce_fecha(fecha2)
 
-
-    def lee_fichero(self,nomfich):
+    def lee_fichero(self, nomfich):
         res = []
         with open(nomfich) as f:
             n = int(f.readline())
@@ -23,15 +38,15 @@ class EDA:
                     print("*", end="")
             dt = timer()-dt
             print(f'\nLectura fichero: {dt:.5} seg.')
-            print(f'n = {n} personas en total.')
+            print(f'n = {n} personas en total. \n')
             return res
 
-    def dc(a, b):
+    def dc(self, a, b):
         return a//b if a >= 0 else -((-a)//b)
 
-    def traduce_fecha(txt):
+    def traduce_fecha(self, txt):
         f = list(map(int, txt.split('/')))
-        return 367*f[2]-(7*(f[2]+5001+dc(f[1]-9, 7)))//4+(275*f[1])//9+f[0]-692561
+        return 367*f[2]-(7*(f[2]+5001+self.dc(f[1]-9, 7)))//4+(275*f[1])//9+f[0]-692561
 
 
 class Persona:
@@ -50,5 +65,5 @@ class Persona:
 
 
 if __name__ == "__main__":
-    principal=EDA()
+    principal = EDA()
     principal.main()
