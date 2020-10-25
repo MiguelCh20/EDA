@@ -33,23 +33,16 @@ class EDA:
 
     def filtrado(self, vector, inicio, fin):
         validos = []
-        new = [vector[0].nom, 1]
-        validos.append(new)
         for i in range(1, len(vector)):
             nacimiento = vector[i].nac
             if nacimiento in range(inicio, fin):
                 nombre = vector[i].nom
-                tamaño=len(validos)
-                for j in range(tamaño):
+                tamaño = len(validos)
+                for j in range(0, tamaño, 1):
                     if nombre == validos[j][0]:
                         validos[j][1] = validos[j][1]+1
-                        j+=1
-                        break
-                    else:
-                        new = [vector[i].nom, 1]
-                        validos.append(new)
-                        j+=1
-                        break
+                new = [vector[i].nom, 1]
+                validos.append(new)
         return validos
 
     def lee_fichero(self, nomfich):
