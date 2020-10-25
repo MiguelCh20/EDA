@@ -12,9 +12,9 @@ class EDA:
                 vector = []
                 vector = self.lee_fichero(cargar)
                 archivo = True
+                print(vector[100].nac)
             except FileNotFoundError:
                 print("Introduzca un archivo que exista")
-
         print("*** OPCIONES GENERALES ***")
         usuarios = int(input("Número de nombres a mostrar: "))
         nombre = input("Nombre del usuario: ")
@@ -22,8 +22,35 @@ class EDA:
         print("\n*** BUCLE DE CONSULTAS ***")
         fecha1 = input("Introduzca la fecha de inicio de búsqueda: ")
         inicio = self.traduce_fecha(fecha1)
+        print(inicio)
         fecha2 = input("Introduzca la fecha de fin de búsqueda: ")
         fin = self.traduce_fecha(fecha2)
+        print(fin)
+
+        busqueda = []
+        busqueda = self.filtrado(vector, inicio, fin)
+        print(busqueda)
+
+    def filtrado(self, vector, inicio, fin):
+        validos = []
+        new = [vector[0].nom, 1]
+        validos.append(new)
+        for i in range(1, len(vector)):
+            nacimiento = vector[i].nac
+            if nacimiento in range(inicio, fin):
+                nombre = vector[i].nom
+                tamaño=len(validos)
+                for j in range(tamaño):
+                    if nombre == validos[j][0]:
+                        validos[j][1] = validos[j][1]+1
+                        j+=1
+                        break
+                    else:
+                        new = [vector[i].nom, 1]
+                        validos.append(new)
+                        j+=1
+                        break
+        return validos
 
     def lee_fichero(self, nomfich):
         res = []
