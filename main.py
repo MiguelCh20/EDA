@@ -22,14 +22,11 @@ class EDA:
         print("\n*** BUCLE DE CONSULTAS ***")
         fecha1 = input("Introduzca la fecha de inicio de búsqueda: ")
         inicio = self.traduce_fecha(fecha1)
-        print(inicio)
         fecha2 = input("Introduzca la fecha de fin de búsqueda: ")
         fin = self.traduce_fecha(fecha2)
-        print(fin)
 
         busqueda = []
         busqueda = self.filtrado(vector, inicio, fin)
-        print(busqueda)
 
     def filtrado(self, vector, inicio, fin):
         validos = []
@@ -41,9 +38,12 @@ class EDA:
                 for j in range(0, tamaño, 1):
                     if nombre == validos[j][0]:
                         validos[j][1] = validos[j][1]+1
+                        break
                 new = [vector[i].nom, 1]
                 validos.append(new)
         return validos
+
+    def ordenamiento(self,busqueda):
 
     def lee_fichero(self, nomfich):
         res = []
