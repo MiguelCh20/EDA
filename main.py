@@ -12,7 +12,6 @@ class EDA:
                 vector = []
                 vector = self.lee_fichero(cargar)
                 archivo = True
-                print(vector[100].nac)
             except FileNotFoundError:
                 print("Introduzca un archivo que exista")
         print("*** OPCIONES GENERALES ***")
@@ -27,12 +26,15 @@ class EDA:
 
         busqueda = []
         busqueda = self.filtrado(vector, inicio, fin)
+        self.ordenamiento(busqueda)
+        posicion = self.busqueda_nom(busqueda, nombre)
+        self.imprimir(busqueda,usuarios,posicion)
 
     def filtrado(self, vector, inicio, fin):
         validos = []
         for i in range(1, len(vector)):
             nacimiento = vector[i].nac
-            if nacimiento in range(inicio, fin):
+            if nacimiento >= inicio and nacimiento <= fin:
                 nombre = vector[i].nom
                 tamaño = len(validos)
                 for j in range(0, tamaño, 1):
@@ -43,7 +45,26 @@ class EDA:
                 validos.append(new)
         return validos
 
-    def ordenamiento(self,busqueda):
+    def ordenamiento(self, busqueda):
+        for i in range(len(busqueda)-1, 0, -1):
+            for j in range(i):
+                if busqueda[j][1] < busqueda[j+1][1]:
+                    temporal = busqueda[j]
+                    busqueda[j] = busqueda[j+1]
+                    busqueda[j+1] = temporal
+                    break
+
+    def imprimir(self, busqueda, usuarios,posicion):
+        print()
+        for i in range(usuarios):
+            print(f"\t{i+1}.{busqueda[i][0]}: {busqueda[i][1]}")
+        print(f"\t{posicion+1}.{busqueda[posicion][0]}: {busqueda[posicion][1]}\n")
+
+    def busqueda_nom(self, busqueda, nombre):
+        for i in range(len(busqueda)):
+            if nombre == busqueda[i][0]:
+                return i
+        return -1
 
     def lee_fichero(self, nomfich):
         res = []
