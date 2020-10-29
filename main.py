@@ -25,46 +25,85 @@ class EDA:
         fin = self.traduce_fecha(fecha2)
 
         busqueda = []
-        busqueda = self.filtrado(vector, inicio, fin)
-        self.ordenamiento(busqueda)
+        busqueda, m, comp_ins, movi_ins, timer_fil, timer_ins = self.filtrado(
+            vector, inicio, fin)
+        movi_ext, comp_ext, timer_ext = self.ordenamiento(busqueda)
         posicion = self.busqueda_nom(busqueda, nombre)
-        self.imprimir(busqueda,usuarios,posicion)
+        self.imprimir(busqueda, usuarios, posicion)
+        print("*** RESULTADOS ***")
+        print("m= ", m, " personas que cumplen las condiciones")
+        print("p= ", len(busqueda), "nombres distintos")
+        print("d= ", fin-inicio, "dias en el intervalo")
+        timer_seg = 0  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        self.procesos(len(vector), timer_fil, comp_ins, movi_ins,
+                      timer_ins, comp_ext, movi_ext, timer_ext, timer_seg)
 
     def filtrado(self, vector, inicio, fin):
         validos = []
-        for i in range(1, len(vector)):
+        contador = 0
+        comparaciones = 0
+        movimientos = 0
+        dt = timer()
+        dt1 = 0
+        for i in range(0, len(vector)):
             nacimiento = vector[i].nac
             if nacimiento >= inicio and nacimiento <= fin:
                 nombre = vector[i].nom
-                tamaño = len(validos)
-                for j in range(0, tamaño, 1):
+                contador += 1
+                contador_j = 0
+                for j in range(len(validos)):
+                    contador_j += 1
+                    comparaciones += 1
                     if nombre == validos[j][0]:
+                        movimientos += 1
                         validos[j][1] = validos[j][1]+1
                         break
-                new = [vector[i].nom, 1]
-                validos.append(new)
-        return validos
+                if len(validos) == 0 or contador_j == (len(validos)) and nombre != validos[contador_j-1][0]:
+                    comparaciones += 1
+                    movimientos += 1
+                    new = [vector[i].nom, 1]
+                    validos.append(new)
+                dt1 = timer()-dt
+        dt = timer()-dt
+        return validos, contador, comparaciones, movimientos, dt, dt1
+
+    """def insercion2(self,vector,inicio,fin):
+        validos[]
+        for 
+    """
 
     def ordenamiento(self, busqueda):
+        comparaciones = 0
+        movimientos = 0
+        dt = timer()
         for i in range(len(busqueda)-1, 0, -1):
             for j in range(i):
+                comparaciones += 1
                 if busqueda[j][1] < busqueda[j+1][1]:
                     temporal = busqueda[j]
                     busqueda[j] = busqueda[j+1]
                     busqueda[j+1] = temporal
-                    break
+                    movimientos += 3
+        dt = timer()-dt
+        return movimientos, comparaciones, dt
 
-    def imprimir(self, busqueda, usuarios,posicion):
+    def imprimir(self, busqueda, usuarios, posicion):
         print()
         for i in range(usuarios):
             print(f"\t{i+1}.{busqueda[i][0]}: {busqueda[i][1]}")
-        print(f"\t{posicion+1}.{busqueda[posicion][0]}: {busqueda[posicion][1]}\n")
+        print(
+            f"\t{posicion+1}.{busqueda[posicion][0]}: {busqueda[posicion][1]}\n")
 
     def busqueda_nom(self, busqueda, nombre):
         for i in range(len(busqueda)):
             if nombre == busqueda[i][0]:
                 return i
         return -1
+
+    def procesos(self, n, timer_fil, comp_ins, movi_ins, timer_ins, comp_ext, movi_ext, timer_ext, timer_seg):
+        print("{:14}{:1}{:>22}{:1}{:>22}{:1}{:>14}".format("FILTRADO",
+                                                           "|", f"{n} comps", "|", "0 movs", "|", f"{timer_fil:.5} seg"))
+        # AÑADIR EL RESTO
 
     def lee_fichero(self, nomfich):
         res = []
