@@ -1,4 +1,5 @@
 from timeit import default_timer as timer
+import copy
 
 
 class EDA:
@@ -27,9 +28,12 @@ class EDA:
         busqueda = []
         busqueda, m, comp_ins, movi_ins, timer_fil, timer_ins = self.filtrado(
             vector, inicio, fin)
+        segundo = []
+        segundo = self.insercion2(vector, inicio, fin)
+        print(segundo[0], segundo[1], segundo[-1], segundo[-2])
         movi_ext, comp_ext, timer_ext = self.ordenamiento(busqueda)
         posicion = self.busqueda_nom(busqueda, nombre)
-        self.imprimir(busqueda, usuarios, posicion)
+        self.imprimir(busqueda, usuarios, posicion, nombre)
         print("*** RESULTADOS ***")
         print("m= ", m, " personas que cumplen las condiciones")
         print("p= ", len(busqueda), "nombres distintos")
@@ -67,10 +71,62 @@ class EDA:
         dt = timer()-dt
         return validos, contador, comparaciones, movimientos, dt, dt1
 
-    """def insercion2(self,vector,inicio,fin):
-        validos[]
-        for 
-    """
+    def insercion2(self, vector, inicio, fin):
+        validos = []
+        contador = 0
+        comparaciones = 0
+        movimientos = 0
+        dt = timer()
+        dt1 = 0
+        for i in range(0, len(vector)):
+            nacimiento = vector[i].nac
+            if nacimiento >= inicio and nacimiento <= fin:
+                nombre = vector[i].nom
+                contador += 1
+                contador_j = 0
+                if len(validos) == 0:
+                    new = [vector[i].nom, 1]
+                    validos.append(new)
+                else:
+                    validos = self.busqueda_binaria(vector, validos, nombre)
+        return validos
+
+    def busqueda_binaria(self, vector, validos, nombre):
+        inicio = 0
+        fin = len(validos)
+        while inicio <= fin:
+            medio = int((inicio+fin)/2)
+            if nombre == validos[medio][0]:
+                validos[medio][1] += 1
+                return validos
+            elif nombre > validos[medio][0]:
+                if (medio+1) >= len(validos):
+                    new = [nombre, 1]
+                    validos.append(new)
+                    return validos
+                elif nombre < validos[medio+1][0]:
+                    self.mover(validos, medio+1, nombre)
+                    return validos
+                inicio = medio+1
+            else:
+                if (medio-1) < 0:
+                    self.mover(validos, 0, nombre)
+                    return validos
+                elif nombre > validos[medio-1][0]:
+                    self.mover(validos, medio, nombre)
+                    return validos
+                fin = medio-1
+        return validos
+
+    def mover(self, validos, medio, nombre):
+        temporal = copy.deepcopy(validos[medio])
+        validos[medio][0] = nombre
+        validos[medio][1] = 1
+        validos.append(temporal)
+        while validos[medio+1] != temporal:
+            temporal2 = validos[medio+1]
+            validos.remove(validos[medio+1])
+            validos.append(temporal2)
 
     def ordenamiento(self, busqueda):
         comparaciones = 0
@@ -87,12 +143,16 @@ class EDA:
         dt = timer()-dt
         return movimientos, comparaciones, dt
 
-    def imprimir(self, busqueda, usuarios, posicion):
+    def imprimir(self, busqueda, usuarios, posicion, nombre):
         print()
         for i in range(usuarios):
             print(f"\t{i+1}.{busqueda[i][0]}: {busqueda[i][1]}")
-        print(
-            f"\t{posicion+1}.{busqueda[posicion][0]}: {busqueda[posicion][1]}\n")
+        if posicion != -1:
+            print(
+                f"\t{posicion+1}.{busqueda[posicion][0]}: {busqueda[posicion][1]}\n")
+        else:
+            print(
+                f"\n\tEl nombre introducido({nombre}) no se encuentra en ese rango de fechas\n")
 
     def busqueda_nom(self, busqueda, nombre):
         for i in range(len(busqueda)):
