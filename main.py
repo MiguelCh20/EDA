@@ -5,42 +5,49 @@ import copy
 class EDA:
 
     def main(self):
-        archivo = False
-        while archivo != True:
-            try:
-                cargar = input(
-                    "Introduzca el nombre del fichero que desea cargar con la extension .txt: ")
-                vector = []
-                vector = self.lee_fichero(cargar)
-                archivo = True
-            except FileNotFoundError:
-                print("Introduzca un archivo que exista")
-        print("*** OPCIONES GENERALES ***")
-        usuarios = int(input("Número de nombres a mostrar: "))
-        nombre = input("Nombre del usuario: ")
+        continuar = True
+        while continuar:
+            archivo = False
+            while archivo != True:
+                try:
+                    cargar = input(
+                        "Introduzca el nombre del fichero que desea cargar con la extension .txt: ")
+                    vector = []
+                    vector = self.lee_fichero(cargar)
+                    archivo = True
+                except FileNotFoundError:
+                    print("Introduzca un archivo que exista")
+            print("*** OPCIONES GENERALES ***")
+            usuarios = int(input("Número de nombres a mostrar: "))
+            nombre = input("Nombre del usuario: ")
 
-        print("\n*** BUCLE DE CONSULTAS ***")
-        fecha1 = input("Introduzca la fecha de inicio de búsqueda: ")
-        inicio = self.traduce_fecha(fecha1)
-        fecha2 = input("Introduzca la fecha de fin de búsqueda: ")
-        fin = self.traduce_fecha(fecha2)
+            print("\n*** BUCLE DE CONSULTAS ***")
+            fecha1 = input(
+                "Introduzca la fecha de inicio de búsqueda(d/m/a): ")
+            inicio = self.traduce_fecha(fecha1)
+            fecha2 = input("Introduzca la fecha de fin de búsqueda(d/m/a): ")
+            fin = self.traduce_fecha(fecha2)
 
-        busqueda = []
-        busqueda, m, comp_ins, movi_ins, timer_fil, timer_ins = self.filtrado(
-            vector, inicio, fin)
-        segundo = []
-        segundo = self.insercion2(vector, inicio, fin)
-        print(segundo[0], segundo[1], segundo[-1], segundo[-2])
-        movi_ext, comp_ext, timer_ext = self.ordenamiento(busqueda)
-        posicion = self.busqueda_nom(busqueda, nombre)
-        self.imprimir(busqueda, usuarios, posicion, nombre)
-        print("*** RESULTADOS ***")
-        print("m= ", m, " personas que cumplen las condiciones")
-        print("p= ", len(busqueda), "nombres distintos")
-        print("d= ", fin-inicio, "dias en el intervalo")
-        timer_seg = 0  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        self.procesos(len(vector), timer_fil, comp_ins, movi_ins,
-                      timer_ins, comp_ext, movi_ext, timer_ext, timer_seg)
+            busqueda = []
+            busqueda, m, comp_ins, movi_ins, timer_fil, timer_ins = self.filtrado(
+                vector, inicio, fin)
+            segundo = []
+            segundo, timer_ins2, comp_ins2, movi_ins2 = self.insercion2(
+                vector, inicio, fin)
+            movi_ext, comp_ext, timer_ext = self.ordenamiento(busqueda)
+            posicion, timer_seg = self.busqueda_nom(busqueda, nombre)
+            self.imprimir(busqueda, usuarios, posicion, nombre)
+            print("*** RESULTADOS ***")
+            print("m= ", m, " personas que cumplen las condiciones")
+            print("p= ", len(busqueda), "nombres distintos")
+            print("d= ", fin-inicio, "dias en el intervalo")
+            self.procesos(len(vector), timer_fil, comp_ins, movi_ins,
+                          timer_ins, comp_ins2, movi_ins2,
+                          timer_ins2, comp_ext, movi_ext, timer_ext, timer_seg, posicion+1)
+            pregunta = input("\n¿Continuar[S/N]? ")
+            if pregunta != "S" and pregunta != "s":
+                continuar = False
+                exit()
 
     def filtrado(self, vector, inicio, fin):
         validos = []
@@ -73,60 +80,79 @@ class EDA:
 
     def insercion2(self, vector, inicio, fin):
         validos = []
-        contador = 0
         comparaciones = 0
         movimientos = 0
         dt = timer()
-        dt1 = 0
         for i in range(0, len(vector)):
             nacimiento = vector[i].nac
             if nacimiento >= inicio and nacimiento <= fin:
                 nombre = vector[i].nom
-                contador += 1
-                contador_j = 0
                 if len(validos) == 0:
+                    movimientos += 1
                     new = [vector[i].nom, 1]
                     validos.append(new)
                 else:
-                    validos = self.busqueda_binaria(vector, validos, nombre)
-        return validos
+                    validos, comparaciones, movimientos = self.busqueda_binaria(
+                        vector, validos, nombre, comparaciones, movimientos)
+        dt = timer()-dt
+        return validos, dt, movimientos, comparaciones
 
-    def busqueda_binaria(self, vector, validos, nombre):
+    def busqueda_binaria(self, vector, validos, nombre, comparaciones, movimientos):
         inicio = 0
         fin = len(validos)
         while inicio <= fin:
             medio = int((inicio+fin)/2)
+            comparaciones += 1
             if nombre == validos[medio][0]:
+                movimientos += 1
                 validos[medio][1] += 1
-                return validos
+                return validos, movimientos, comparaciones
             elif nombre > validos[medio][0]:
+                comparaciones += 1
                 if (medio+1) >= len(validos):
+                    movimientos += 1
                     new = [nombre, 1]
                     validos.append(new)
-                    return validos
+                    return validos, movimientos, comparaciones
                 elif nombre < validos[medio+1][0]:
-                    self.mover(validos, medio+1, nombre)
-                    return validos
+                    comparaciones += 1
+                    movimientos, comparaciones = self.mover(validos, medio+1, nombre,
+                                                            comparaciones, movimientos)
+                    return validos, movimientos, comparaciones
+                comparaciones += 1
                 inicio = medio+1
             else:
+                comparaciones += 1
                 if (medio-1) < 0:
-                    self.mover(validos, 0, nombre)
-                    return validos
+                    movimientos, comparaciones = self.mover(
+                        validos, 0, nombre, comparaciones, movimientos)
+                    return validos, movimientos, comparaciones
                 elif nombre > validos[medio-1][0]:
-                    self.mover(validos, medio, nombre)
-                    return validos
+                    comparaciones += 1
+                    movimientos, comparaciones = self.mover(validos, medio, nombre,
+                                                            comparaciones, movimientos)
+                    return validos, movimientos, comparaciones
+                comparaciones += 1
                 fin = medio-1
-        return validos
+        return validos, movimientos, comparaciones
 
-    def mover(self, validos, medio, nombre):
+    def mover(self, validos, medio, nombre, comparaciones, movimientos):
         temporal = copy.deepcopy(validos[medio])
+        movimientos += 1
         validos[medio][0] = nombre
         validos[medio][1] = 1
+        movimientos += 1
         validos.append(temporal)
+        movimientos += 1
         while validos[medio+1] != temporal:
+            comparaciones += 1
+            movimientos += 1
             temporal2 = validos[medio+1]
+            movimientos += 1
             validos.remove(validos[medio+1])
+            movimientos += 1
             validos.append(temporal2)
+        return movimientos, comparaciones
 
     def ordenamiento(self, busqueda):
         comparaciones = 0
@@ -155,15 +181,25 @@ class EDA:
                 f"\n\tEl nombre introducido({nombre}) no se encuentra en ese rango de fechas\n")
 
     def busqueda_nom(self, busqueda, nombre):
+        dt = timer()
+        posicion = -1
         for i in range(len(busqueda)):
             if nombre == busqueda[i][0]:
-                return i
-        return -1
+                posicion = i
+        dt = timer()-dt
+        return posicion, dt
 
-    def procesos(self, n, timer_fil, comp_ins, movi_ins, timer_ins, comp_ext, movi_ext, timer_ext, timer_seg):
+    def procesos(self, n, timer_fil, comp_ins, movi_ins, timer_ins, comp_ins2, movi_ins2, timer_ins2, comp_ext, movi_ext, timer_ext, timer_seg, posicion):
         print("{:14}{:1}{:>22}{:1}{:>22}{:1}{:>14}".format("FILTRADO",
-                                                           "|", f"{n} comps", "|", "0 movs", "|", f"{timer_fil:.5} seg"))
-        # AÑADIR EL RESTO
+                                                           "|", f"{n} comps ", "|", "0 movs ", "|", f"{timer_fil:.5} seg"))
+        print("{:14}{:1}{:>22}{:1}{:>22}{:1}{:>14}".format("INSERCIÓN#1",
+                                                           "|", f"{comp_ins} comps ", "|", f"{movi_ins} movs ", "|", f"{timer_ins:.5} seg"))
+        print("{:14}{:1}{:>22}{:1}{:>22}{:1}{:>14}".format("INSERCIÓN#2",
+                                                           "|", f"{comp_ins2} comps ", "|", f"{movi_ins2} movs ", "|", f"{timer_ins2:.5} seg"))
+        print("{:14}{:1}{:>22}{:1}{:>22}{:1}{:>14}".format("EXTRACCIÓN",
+                                                           "|", f"{comp_ext} comps ", "|", f"{movi_ext} movs ", "|", f"{timer_ext:.5} seg"))
+        print("{:14}{:1}{:>22}{:1}{:>22}{:1}{:>14}".format("SEGUIMIENTO",
+                                                           "|", f"{posicion} comps ", "|", "0 movs ", "|", f"{timer_seg:.5} seg"))
 
     def lee_fichero(self, nomfich):
         res = []
