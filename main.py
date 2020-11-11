@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+# -*- coding: <UTF-8> -*-
 from timeit import default_timer as timer
 import copy
 
@@ -28,19 +30,22 @@ class EDA:
             fecha2 = input("Introduzca la fecha de fin de búsqueda(d/m/a): ")
             fin = self.traduce_fecha(fecha2)
 
-            busqueda = []
             busqueda, m, comp_ins, movi_ins, timer_fil, timer_ins = self.filtrado(
                 vector, inicio, fin)
-            segundo = []
             segundo, timer_ins2, comp_ins2, movi_ins2 = self.insercion2(
                 vector, inicio, fin)
-            movi_ext, comp_ext, timer_ext = self.ordenamiento(busqueda)
-            posicion, timer_seg = self.busqueda_nom(busqueda, nombre)
-            self.imprimir(busqueda, usuarios, posicion, nombre)
+            sum_movimientos = [0]
+            sum_comparaciones = [0]
+            timer_ext = timer()
+            ordenado, movi_ext, comp_ext = self.ordenamiento(
+                busqueda, len(busqueda), sum_movimientos, sum_comparaciones)
+            timer_ext = timer()-timer_ext
+            posicion, timer_seg = self.busqueda_nom(ordenado, nombre)
+            self.imprimir(ordenado, usuarios, posicion, nombre)
             print("*** RESULTADOS ***")
             print("m= ", m, " personas que cumplen las condiciones")
             print("p= ", len(busqueda), "nombres distintos")
-            print("d= ", fin-inicio, "dias en el intervalo")
+            print("d= ", fin-inicio+1, "dias en el intervalo")
             self.procesos(len(vector), timer_fil, comp_ins, movi_ins,
                           timer_ins, comp_ins2, movi_ins2,
                           timer_ins2, comp_ext, movi_ext, timer_ext, timer_seg, posicion+1)
@@ -124,51 +129,90 @@ class EDA:
                     return validos, movimientos, comparaciones
                 elif nombre < validos[medio+1][0]:
                     comparaciones += 1
-                    movimientos, comparaciones = self.mover(validos, medio+1, nombre,
-                                                            comparaciones, movimientos)
+                    movimientos = self.mover(
+                        validos, medio+1, nombre, movimientos)
                     return validos, movimientos, comparaciones
                 comparaciones += 1
                 inicio = medio+1
             else:
                 comparaciones += 1
                 if (medio-1) < 0:
-                    movimientos, comparaciones = self.mover(
-                        validos, 0, nombre, comparaciones, movimientos)
+                    movimientos = self.mover(
+                        validos, 0, nombre,  movimientos)
                     return validos, movimientos, comparaciones
                 elif nombre > validos[medio-1][0]:
                     comparaciones += 1
-                    movimientos, comparaciones = self.mover(validos, medio, nombre,
-                                                            comparaciones, movimientos)
+                    movimientos = self.mover(
+                        validos, medio, nombre, movimientos)
                     return validos, movimientos, comparaciones
                 comparaciones += 1
                 fin = medio-1
         return validos, movimientos, comparaciones
 
-    def mover(self, validos, medio, nombre, comparaciones, movimientos):
+    def mover(self, validos, medio, nombre,  movimientos):
         new = ["", 0]
         validos.append(new)
+        movimientos += 1
         for i in range(len(validos)-2, medio-1, -1):
-            movimientos += 1
+            movimientos += 2
             temporal = copy.deepcopy(validos[i])
             validos[i+1] = temporal
         validos[medio][0] = nombre
         validos[medio][1] = 1
-        return movimientos, comparaciones
+        movimientos += 2
+        return movimientos
 
-    def ordenamiento(self, busqueda):
+    def ordenamiento(self, busqueda, size, sum_movimientos, sum_comparaciones):
+        if len(busqueda) <= 1:
+            return busqueda
+
+        medio = int(len(busqueda) / 2)
+        izquierda = busqueda[:medio]
+        derecha = busqueda[medio:]
+
+        izquierda = self.ordenamiento(
+            izquierda, size, sum_movimientos, sum_comparaciones)
+        derecha = self.ordenamiento(
+            derecha, size, sum_movimientos, sum_comparaciones)
+
+        lista_nueva, comparaciones, movimientos = self.merge(
+            izquierda, derecha)
+        sum_comparaciones[0] = comparaciones+sum_comparaciones[0]
+        sum_movimientos[0] = movimientos+sum_movimientos[0]
+        if len(lista_nueva) == size:
+            return lista_nueva, sum_movimientos[0], sum_comparaciones[0]
+        return lista_nueva
+
+    def merge(self, listaA, listaB):
         comparaciones = 0
         movimientos = 0
-        dt = timer()
-        for i in range(len(busqueda)-1, 0, -1):
-            for j in range(i):
-                comparaciones += 1
-                if busqueda[j][1] < busqueda[j+1][1]:
-                    temporal = busqueda[j]
-                    busqueda[j] = busqueda[j+1]
-                    busqueda[j+1] = temporal
-                    movimientos += 3
-        dt = timer()-dt
-        return movimientos, comparaciones, dt
+        lista_nueva = []
+        a = 0
+        b = 0
+
+        while a < len(listaA) and b < len(listaB):
+            comparaciones += 1
+
+            if listaA[a][1] < listaB[b][1]:
+                lista_nueva.append(listaB[b])
+                movimientos += 1
+                b += 1
+            else:
+                lista_nueva.append(listaA[a])
+                movimientos += 1
+                a += 1
+
+        while a < len(listaA):
+            lista_nueva.append(listaA[a])
+            movimientos += 1
+            a += 1
+
+        while b < len(listaB):
+            lista_nueva.append(listaB[b])
+            movimientos += 1
+            b += 1
+
+        return lista_nueva, comparaciones, movimientos
 
     def imprimir(self, busqueda, usuarios, posicion, nombre):
         print()
