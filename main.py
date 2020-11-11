@@ -56,28 +56,35 @@ class EDA:
         comparaciones = 0
         movimientos = 0
         dt = timer()
-        dt1 = 0
+        dt1_sum = 0
         for i in range(0, len(vector)):
             nacimiento = vector[i].nac
             if nacimiento >= inicio and nacimiento <= fin:
+                dt1 = timer()
                 nombre = vector[i].nom
                 contador += 1
-                contador_j = 0
-                for j in range(len(validos)):
-                    contador_j += 1
-                    comparaciones += 1
-                    if nombre == validos[j][0]:
-                        movimientos += 1
-                        validos[j][1] = validos[j][1]+1
-                        break
-                if len(validos) == 0 or contador_j == (len(validos)) and nombre != validos[contador_j-1][0]:
-                    comparaciones += 1
-                    movimientos += 1
-                    new = [vector[i].nom, 1]
-                    validos.append(new)
-                dt1 = timer()-dt
-        dt = timer()-dt
-        return validos, contador, comparaciones, movimientos, dt, dt1
+                validos, comparaciones, movimientos, = self.busqueda_secuencial(
+                    validos, nombre, comparaciones, movimientos)
+                dt1 = timer()-dt1
+                dt1_sum += dt1
+        dt = timer()-dt-dt1_sum
+        return validos, contador, comparaciones, movimientos, dt, dt1_sum
+
+    def busqueda_secuencial(self, validos, nombre, comparaciones, movimientos):
+        contador_j = 0
+        for j in range(len(validos)):
+            contador_j += 1
+            comparaciones += 1
+            if nombre == validos[j][0]:
+                movimientos += 1
+                validos[j][1] = validos[j][1]+1
+                break
+        if len(validos) == 0 or contador_j == (len(validos)) and nombre != validos[contador_j-1][0]:
+            comparaciones += 1
+            movimientos += 1
+            new = [nombre, 1]
+            validos.append(new)
+        return validos, comparaciones, movimientos
 
     def insercion2(self, vector, inicio, fin):
         validos = []
