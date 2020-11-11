@@ -48,6 +48,7 @@ class EDA:
             if pregunta != "S" and pregunta != "s":
                 continuar = False
                 exit()
+            print()
 
     def filtrado(self, vector, inicio, fin):
         validos = []
@@ -137,21 +138,14 @@ class EDA:
         return validos, movimientos, comparaciones
 
     def mover(self, validos, medio, nombre, comparaciones, movimientos):
-        temporal = copy.deepcopy(validos[medio])
-        movimientos += 1
+        new = ["", 0]
+        validos.append(new)
+        for i in range(len(validos)-2, medio-1, -1):
+            movimientos += 1
+            temporal = copy.deepcopy(validos[i])
+            validos[i+1] = temporal
         validos[medio][0] = nombre
         validos[medio][1] = 1
-        movimientos += 1
-        validos.append(temporal)
-        movimientos += 1
-        while validos[medio+1] != temporal:
-            comparaciones += 1
-            movimientos += 1
-            temporal2 = validos[medio+1]
-            movimientos += 1
-            validos.remove(validos[medio+1])
-            movimientos += 1
-            validos.append(temporal2)
         return movimientos, comparaciones
 
     def ordenamiento(self, busqueda):
